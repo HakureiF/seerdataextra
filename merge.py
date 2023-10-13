@@ -153,6 +153,52 @@ for monster in monsters['Monsters']['Monster']:
     #羁绊神谕等进阶魂印
     if monster['ID'] + 5000 in icon_dict:
         monster['SpIcon'] = icon_dict[monster['ID'] +5000]
+    
         
-    if monster['ID'] == 5000:
-        print(monster)
+f = open('data.txt', 'w', encoding="utf-8")
+
+for monster in monsters['Monsters']['Monster']:
+    if monster['ID'] > 5000:
+        break
+    
+    f.write('精灵名称：' + monster['DefName'])
+    
+    if 'Icon' in monster:
+        f.write('\n魂印效果：\n')
+        f.write(monster['Icon']['tips'])
+    
+    if 'SpIcon' in monster:
+        f.write('\n进阶魂印效果：\n') 
+        f.write(monster['SpIcon']['tips'])
+    
+    f.write('\n技能效果：\n')
+    for move in monster['LearnableMoves']['Move']:
+        if 'Detail' in move:
+            if 'FullInfo' in move['Detail']:
+                f.write(move['Detail']['FullInfo'] + '\n')
+    if 'AdvMove' in monster['LearnableMoves']:
+        if isinstance(monster['LearnableMoves']['AdvMove'], list):
+            for move in monster['LearnableMoves']['AdvMove']:
+                if 'FullInfo' in move['Detail']:
+                    f.write(move['Detail']['FullInfo'] + '\n')
+        else:
+            f.write(monster['LearnableMoves']['AdvMove']['Detail']['FullInfo'] + '\n')
+    if 'SpMove' in monster['LearnableMoves']:
+        for move in monster['LearnableMoves']['SpMove']:
+            if 'Detail' in move:
+                if 'FullInfo' in move['Detail']:
+                    f.write(move['Detail']['FullInfo'] + '\n')
+            
+    
+    if 'ExtraMoves' in monster:
+        f.write('第五技能效果：\n')
+        move = monster['ExtraMoves']['Move']['Detail']
+        if 'FullInfo' in move:
+            f.write(move['FullInfo'] + '\n')
+    if 'SpExtraMoves' in monster:
+        f.write('额外第五技能效果：\n')
+        move = monster['SpExtraMoves']['Move']['Detail']
+        if 'FullInfo' in move:
+            f.write(move['FullInfo'] + '\n')
+        
+f.close()
