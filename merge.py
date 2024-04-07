@@ -111,8 +111,15 @@ for move in moves['MovesTbl']['Moves']['Move']:
                 curr_arg = curr_arg + argsNum
                 move_info.append(ef_info)
             
-            full_info = "技能[" + move['Name'] + "]的效果是：" + ','.join(move_info)
-            
+            if 'MustHit' in move:
+                move_info.insert(0, '必中')
+            elif 'Accuracy' in move:
+                move_info.insert(0, f"命中率{move['Accuracy']}%")
+            if 'MaxPP' in move:
+                move_info.insert(0, f"pp{move['MaxPP']}")
+            if 'Power' in move:
+                move_info.insert(0, f"威力{move['Power']}")
+            full_info = f"[{move['Name']}]：" + ','.join(move_info)
             move['FullInfo'] = full_info
 
 
@@ -122,12 +129,13 @@ for m in moves['MovesTbl']['Moves']['Move']:
     
 
 for monster in monsters['Monsters']['Monster']:
-    if monster['ID'] > 5000:
-        break
+    if monster['ID'] > 5000 or monster['ID'] < 2000:
+        continue
     
     #普通技能
     for move in monster['LearnableMoves']['Move']:
-        move['Detail'] = move_dict[move['ID']]
+        if 'Rec' in move:
+            move['Detail'] = move_dict[move['ID']]
     #特训技能
     if 'SpMove' in monster['LearnableMoves']:
         for move in monster['LearnableMoves']['SpMove']:
@@ -158,45 +166,48 @@ for monster in monsters['Monsters']['Monster']:
 f = open('data.txt', 'w', encoding="utf-8")
 
 for monster in monsters['Monsters']['Monster']:
-    if monster['ID'] > 5000:
-        break
+    if monster['ID'] > 5000 or monster['ID'] < 2000:
+        continue
     
-    f.write('精灵名称：' + monster['DefName'])
+    f.write(f"精灵名称：{monster['DefName']}\n")
     
     if 'Icon' in monster:
-        f.write('\n魂印效果：\n')
+        # f.write('\n魂印效果：\n')
         f.write(monster['Icon']['tips'])
     
     if 'SpIcon' in monster:
-        f.write('\n进阶魂印效果：\n') 
+        # f.write('\n进阶魂印效果：\n') 
         f.write(monster['SpIcon']['tips'])
     
-    f.write('\n技能效果：\n')
+    # f.write('\n技能效果：\n')
     for move in monster['LearnableMoves']['Move']:
         if 'Detail' in move:
             if 'FullInfo' in move['Detail']:
-                f.write(move['Detail']['FullInfo'] + '\n')
+                text = move['Detail']['FullInfo']
+                f.write(text + '\n')
     if 'AdvMove' in monster['LearnableMoves']:
         if isinstance(monster['LearnableMoves']['AdvMove'], list):
             for move in monster['LearnableMoves']['AdvMove']:
                 if 'FullInfo' in move['Detail']:
-                    f.write(move['Detail']['FullInfo'] + '\n')
+                    text = move['Detail']['FullInfo']
+                    f.write(text + '\n')
         else:
             f.write(monster['LearnableMoves']['AdvMove']['Detail']['FullInfo'] + '\n')
     if 'SpMove' in monster['LearnableMoves']:
         for move in monster['LearnableMoves']['SpMove']:
             if 'Detail' in move:
                 if 'FullInfo' in move['Detail']:
-                    f.write(move['Detail']['FullInfo'] + '\n')
+                    text = move['Detail']['FullInfo']
+                    f.write(text + '\n')
             
     
     if 'ExtraMoves' in monster:
-        f.write('第五技能效果：\n')
+        # f.write('第五技能效果：\n')
         move = monster['ExtraMoves']['Move']['Detail']
         if 'FullInfo' in move:
             f.write(move['FullInfo'] + '\n')
     if 'SpExtraMoves' in monster:
-        f.write('额外第五技能效果：\n')
+        # f.write('额外第五技能效果：\n')
         move = monster['SpExtraMoves']['Move']['Detail']
         if 'FullInfo' in move:
             f.write(move['FullInfo'] + '\n')

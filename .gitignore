@@ -162,3 +162,5 @@ cython_debug/
 
 test.json
 test.py
+
+data.txt
