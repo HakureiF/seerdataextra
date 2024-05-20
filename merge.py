@@ -74,6 +74,8 @@ for move in moves['MovesTbl']['Moves']['Move']:
             move_info = []
             curr_arg = 0
             for effect in effects:
+                if effect not in effect_dict:
+                    break
                 argsNum = effect_dict[effect]['argsNum']
                 info = effect_dict[effect]['info']
                 
@@ -105,7 +107,10 @@ for move in moves['MovesTbl']['Moves']['Move']:
                             else:
                                 args[curr_arg + index] = paramType['params'][args[curr_arg + index]]
                 
-                ef_info = info.format(*args[curr_arg: curr_arg+argsNum])
+                try:
+                    ef_info = info.format(*args[curr_arg: curr_arg+argsNum])
+                except IndexError:
+                    ef_info = info
 
                 
                 curr_arg = curr_arg + argsNum
@@ -119,7 +124,7 @@ for move in moves['MovesTbl']['Moves']['Move']:
                 move_info.insert(0, f"pp{move['MaxPP']}")
             if 'Power' in move:
                 move_info.insert(0, f"威力{move['Power']}")
-            full_info = f"[{move['Name']}]：" + ','.join(move_info)
+            full_info = f"【{move['Name']}】：" + ','.join(move_info)
             move['FullInfo'] = full_info
 
 
@@ -163,53 +168,62 @@ for monster in monsters['Monsters']['Monster']:
         monster['SpIcon'] = icon_dict[monster['ID'] +5000]
     
         
-f = open('data.txt', 'w', encoding="utf-8")
+f = open('pets_jsondata.json', 'w', encoding="utf-8")
+
+pets_jsondata = {}
 
 for monster in monsters['Monsters']['Monster']:
     if monster['ID'] > 5000 or monster['ID'] < 2000:
         continue
     
-    f.write(f"精灵名称：{monster['DefName']}\n")
+    pet_data = ''
     
-    if 'Icon' in monster:
-        # f.write('\n魂印效果：\n')
-        f.write(monster['Icon']['tips'])
+    # pet_data += f"精灵名称：{monster['DefName']}\n"
     
-    if 'SpIcon' in monster:
-        # f.write('\n进阶魂印效果：\n') 
-        f.write(monster['SpIcon']['tips'])
+    # if 'Icon' in monster:
+    #     # f.write('\n魂印效果：\n')
+    #     pet_data += monster['Icon']['tips']
+    
+    # if 'SpIcon' in monster:
+    #     # f.write('\n进阶魂印效果：\n') 
+    #     pet_data += monster['SpIcon']['tips']
     
     # f.write('\n技能效果：\n')
     for move in monster['LearnableMoves']['Move']:
         if 'Detail' in move:
             if 'FullInfo' in move['Detail']:
                 text = move['Detail']['FullInfo']
-                f.write(text + '\n')
+                pet_data += text + '\n'
     if 'AdvMove' in monster['LearnableMoves']:
         if isinstance(monster['LearnableMoves']['AdvMove'], list):
             for move in monster['LearnableMoves']['AdvMove']:
                 if 'FullInfo' in move['Detail']:
                     text = move['Detail']['FullInfo']
-                    f.write(text + '\n')
+                    pet_data += text + '\n'
         else:
-            f.write(monster['LearnableMoves']['AdvMove']['Detail']['FullInfo'] + '\n')
+            pet_data += monster['LearnableMoves']['AdvMove']['Detail']['FullInfo'] + '\n'
     if 'SpMove' in monster['LearnableMoves']:
         for move in monster['LearnableMoves']['SpMove']:
             if 'Detail' in move:
                 if 'FullInfo' in move['Detail']:
                     text = move['Detail']['FullInfo']
-                    f.write(text + '\n')
+                    pet_data += text + '\n'
             
     
     if 'ExtraMoves' in monster:
         # f.write('第五技能效果：\n')
         move = monster['ExtraMoves']['Move']['Detail']
         if 'FullInfo' in move:
-            f.write(move['FullInfo'] + '\n')
+            pet_data += move['FullInfo'] + '\n'
     if 'SpExtraMoves' in monster:
         # f.write('额外第五技能效果：\n')
         move = monster['SpExtraMoves']['Move']['Detail']
         if 'FullInfo' in move:
-            f.write(move['FullInfo'] + '\n')
+            pet_data += move['FullInfo'] + '\n'
+    
+    if pet_data.__contains__("【"):
+        pets_jsondata[monster['ID']] = pet_data
+
+json.dump(pets_jsondata, f, ensure_ascii=False)
         
 f.close()
