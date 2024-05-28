@@ -9,7 +9,7 @@ file2 = open("./data/moves.json", "r", encoding="utf-8")
 moves = json.load(file2)
 file2.close()
 
-file3 = open("./data/effectInfo.json", "r", encoding="utf-8")
+file3 = open("./manualdata/effectInfo_modify.json", "r", encoding="utf-8")
 effectInfo = json.load(file3)
 file3.close()
 
@@ -51,11 +51,11 @@ for i in effectIcon['root']['effect']:
         else:
             icon_dict[i['petId']] = i
     
-#
+# 处理技能效果描述
 for move in moves['MovesTbl']['Moves']['Move']:
     if 'SideEffect' in move and move['ID'] < 38000:
         tmp = move['SideEffect']
-        effects = [] 
+        effects = [] #技能代码数组
         if isinstance(tmp, int):
             effects.append(tmp)
         if isinstance(tmp, str):
@@ -64,44 +64,43 @@ for move in moves['MovesTbl']['Moves']['Move']:
                     
         if 'SideEffectArg' in move:
             tmp2 = move['SideEffectArg']
-            args = [] 
+            args = [] #技能效果参数
             if isinstance(tmp2, int):
                 args.append(tmp2)
             if isinstance(tmp2, str):
                 tmps2 = tmp2.split(" ")
                 args.extend([int(t) for t in tmps2 if t])
                 
-            move_info = []
-            curr_arg = 0
+            move_info = [] #每条技能代码对应的描述存放的数组
+            curr_arg = 0 #指针指向当前处理的技能效果参数
             for effect in effects:
                 if effect not in effect_dict:
                     break
-                argsNum = effect_dict[effect]['argsNum']
-                info = effect_dict[effect]['info']
+                argsNum = effect_dict[effect]['argsNum'] #技能代码effect需要的参数数量
+                info = effect_dict[effect]['info'] #技能代码effect对应的插入参数前的描述文本
                 
                 if 'params' in effect_dict[effect]:
-                    params = effect_dict[effect]['params']
+                    params = effect_dict[effect]['params'] #上面已经处理过的技能代码effect的参数的数组
                     for param in params:
-                        # param 0——ParamType 1——Index 2——Unknown
-                        param_set = param.split(',')
+                        param_set = param.split(',') #param_set是长度为3的数组，其中：0 参数类型的id 1 参数索引 2 Unknown
                         paramType = paramType_dict[int(param_set[0])]
                         index = int(param_set[1])
-                        if int(param_set[0]) == 0:
+                        if int(param_set[0]) == 0: #类型1有6个参数表示各项强化
                             info = info.replace('{'+str(index)+'}', '{}{}{}{}{}{}'.format(*['{'+str(i)+'}' for i in range(index, index+6)]))
-                            for i in range(curr_arg + index, curr_arg + index + 6):
+                            for i in range(curr_arg + index, curr_arg + index + 6): #遍历每项强化
                                 if args[i] == 0:
                                     args[i] = ''
                                 else:
-                                    args[i] = paramType['params'][i - curr_arg - index]
-                                    
-                        if int(param_set[0]) in [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,21]:
+                                    args[i] = paramType['params'][i - curr_arg - index] + f'+{args[i]}'
+                                                                
+                        if int(param_set[0]) in [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,21]: #全部是数值可直接带入的参数类型
                             args[curr_arg + index] = paramType['params'][args[curr_arg + index]]
                             
-                        if int(param_set[0]) == 14:
+                        if int(param_set[0]) == 14: #需要补充加或减号
                             if args[curr_arg + index] > 0:
                                 args[curr_arg + index] = '+' + str(args[curr_arg + index])
                         
-                        if int(param_set[0]) == 20:
+                        if int(param_set[0]) == 20: #回pp参数类型
                             if args[curr_arg + index] >= 40:
                                 args[curr_arg + index] = '全部'
                             else:
@@ -124,7 +123,7 @@ for move in moves['MovesTbl']['Moves']['Move']:
                 move_info.insert(0, f"pp{move['MaxPP']}")
             if 'Power' in move:
                 move_info.insert(0, f"威力{move['Power']}")
-            full_info = f"【{move['Name']}】：" + ','.join(move_info)
+            full_info = f"【{move['Name']}】：" + '；'.join(move_info)
             move['FullInfo'] = full_info
 
 
@@ -157,7 +156,13 @@ for monster in monsters['Monsters']['Monster']:
         monster['ExtraMoves']['Move']['Detail'] = move_dict[monster['ExtraMoves']['Move']['ID']]
     #额外第五技能 
     if 'SpExtraMoves' in monster:
-        monster['SpExtraMoves']['Move']['Detail'] = move_dict[monster['SpExtraMoves']['Move']['ID']]
+        if isinstance(monster['SpExtraMoves']['Move'], list):
+            # print(json.dumps(monster, ensure_ascii=False))
+            for i in range(len(monster['SpExtraMoves']['Move'])):
+                monster['SpExtraMoves']['Move'][i]['Detail'] = move_dict[monster['SpExtraMoves']['Move'][i]['ID']]
+            # print(json.dumps(monster, ensure_ascii=False))
+        else:
+            monster['SpExtraMoves']['Move']['Detail'] = move_dict[monster['SpExtraMoves']['Move']['ID']]
         
         
     #原生魂印
@@ -217,9 +222,15 @@ for monster in monsters['Monsters']['Monster']:
             pet_data += move['FullInfo'] + '\n'
     if 'SpExtraMoves' in monster:
         # f.write('额外第五技能效果：\n')
-        move = monster['SpExtraMoves']['Move']['Detail']
-        if 'FullInfo' in move:
-            pet_data += move['FullInfo'] + '\n'
+        if isinstance(monster['SpExtraMoves']['Move'], list):
+            for m in monster['SpExtraMoves']['Move']:
+                move = m['Detail']
+                if 'FullInfo' in move:
+                    pet_data += move['FullInfo'] + '\n'
+        else:
+            move = monster['SpExtraMoves']['Move']['Detail']
+            if 'FullInfo' in move:
+                pet_data += move['FullInfo'] + '\n'
     
     if pet_data.__contains__("【"):
         pets_jsondata[monster['ID']] = pet_data
