@@ -185,13 +185,11 @@ for monster in monsters['Monsters']['Monster']:
     
     # pet_data += f"精灵名称：{monster['DefName']}\n"
     
-    # if 'Icon' in monster:
-    #     # f.write('\n魂印效果：\n')
-    #     pet_data += monster['Icon']['tips']
+    if 'Icon' in monster and monster['Icon']['tips']:
+        pet_data += '魂印：\n' + monster['Icon']['tips'] + "\n"
     
-    # if 'SpIcon' in monster:
-    #     # f.write('\n进阶魂印效果：\n') 
-    #     pet_data += monster['SpIcon']['tips']
+    if 'SpIcon' in monster and monster['SpIcon']['tips']:
+        pet_data += '进阶魂印：\n' + monster['SpIcon']['tips'] + "\n"
     
     # f.write('\n技能效果：\n')
     for move in monster['LearnableMoves']['Move']:
