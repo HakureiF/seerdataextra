@@ -17,6 +17,15 @@ file4 = open("./data/effectIcon.json", "r", encoding="utf-8")
 effectIcon = json.load(file4)
 file4.close()
 
+file5 = open("./data/skillTypes.json", "r", encoding="utf-8")
+skillTypes = json.load(file5)
+file5.close()
+
+def get_type_name(type_id: int) -> str:
+    for item in skillTypes['root']['item']:
+        if type_id == item['id']:
+            return item['cn']
+
 
 effect_dict = {}
 paramType_dict = {}
@@ -183,13 +192,13 @@ for monster in monsters['Monsters']['Monster']:
     
     pet_data = ''
     
-    # pet_data += f"精灵名称：{monster['DefName']}\n"
-    
+    pet_data += f"{monster['DefName']}\n"
+    pet_data += f"{get_type_name(monster['Type'])}\n"
     if 'Icon' in monster and monster['Icon']['tips']:
-        pet_data += '魂印：\n' + monster['Icon']['tips'] + "\n"
+        pet_data += '魂印：' + monster['Icon']['tips'] + "\n"
     
     if 'SpIcon' in monster and monster['SpIcon']['tips']:
-        pet_data += '进阶魂印：\n' + monster['SpIcon']['tips'] + "\n"
+        pet_data += '进阶魂印：' + monster['SpIcon']['tips'] + "\n"
     
     # f.write('\n技能效果：\n')
     for move in monster['LearnableMoves']['Move']:
