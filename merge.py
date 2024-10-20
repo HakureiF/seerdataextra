@@ -94,26 +94,35 @@ for move in moves['MovesTbl']['Moves']['Move']:
                         param_set = param.split(',') #param_set是长度为3的数组，其中：0 参数类型的id 1 参数索引 2 Unknown
                         paramType = paramType_dict[int(param_set[0])]
                         index = int(param_set[1])
-                        if int(param_set[0]) == 0: #类型1有6个参数表示各项强化
-                            info = info.replace('{'+str(index)+'}', '{}{}{}{}{}{}'.format(*['{'+str(i)+'}' for i in range(index, index+6)]))
-                            for i in range(curr_arg + index, curr_arg + index + 6): #遍历每项强化
-                                if args[i] == 0:
-                                    args[i] = ''
-                                else:
-                                    args[i] = paramType['params'][i - curr_arg - index] + f'+{args[i]}'
-                                                                
-                        if int(param_set[0]) in [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,21]: #全部是数值可直接带入的参数类型
-                            args[curr_arg + index] = paramType['params'][args[curr_arg + index]]
-                            
-                        if int(param_set[0]) == 14: #需要补充加或减号
-                            if args[curr_arg + index] > 0:
-                                args[curr_arg + index] = '+' + str(args[curr_arg + index])
-                        
-                        if int(param_set[0]) == 20: #回pp参数类型
-                            if args[curr_arg + index] >= 40:
-                                args[curr_arg + index] = '全部'
-                            else:
+                        try:
+                            if int(param_set[0]) == 0: #类型1有6个参数表示各项强化
+                                info = info.replace('{'+str(index)+'}', '{}{}{}{}{}{}'.format(*['{'+str(i)+'}' for i in range(index, index+6)]))
+                                for i in range(curr_arg + index, curr_arg + index + 6): #遍历每项强化
+                                    if args[i] == 0:
+                                        args[i] = ''
+                                    else:
+                                        args[i] = paramType['params'][i - curr_arg - index] + f'+{args[i]}'
+                                                                    
+                            if int(param_set[0]) in [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,21]: #全部是数值可直接带入的参数类型
                                 args[curr_arg + index] = paramType['params'][args[curr_arg + index]]
+                                
+                            if int(param_set[0]) == 14: #需要补充加或减号
+                                if args[curr_arg + index] > 0:
+                                    args[curr_arg + index] = '+' + str(args[curr_arg + index])
+                            
+                            if int(param_set[0]) == 20: #回pp参数类型
+                                if args[curr_arg + index] >= 40:
+                                    args[curr_arg + index] = '全部'
+                                else:
+                                    args[curr_arg + index] = paramType['params'][args[curr_arg + index]]
+                        except Exception as e:
+                            print(move)
+                            print(effect_dict[effect])
+                            print(paramType['params'])
+                            print(curr_arg + index)
+                            raise e
+                        
+                            
                 
                 try:
                     ef_info = info.format(*args[curr_arg: curr_arg+argsNum])
